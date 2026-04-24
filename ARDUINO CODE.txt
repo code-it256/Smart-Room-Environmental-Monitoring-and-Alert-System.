@@ -1,0 +1,50 @@
+ARDUINO CODE
+// Pin Definitions
+const int sensorLDR = A0;   
+const int sensorTemp = A1;  
+const int roomLight = 9;    
+const int alertLED = 8;     
+
+// Thresholds
+const float tempThreshold = 30.0; 
+const int lightThreshold = 400;   
+
+void setup() {
+  pinMode(roomLight, OUTPUT);
+  pinMode(alertLED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // 1. Read Sensors
+  int tempRaw = analogRead(sensorTemp);
+  float voltage = tempRaw * (5.0 / 1023.0);
+  float tempC = (voltage - 0.5) * 100;
+  int lightVal = analogRead(sensorLDR);
+
+  // 2. Serial Status Output
+  Serial.print("Temp: "); Serial.print(tempC);
+  Serial.print("C | Light: "); Serial.print(lightVal);
+
+  // ROOM LIGHT: SOLID ON/OFF 
+  if (lightVal < lightThreshold) {
+    digitalWrite(roomLight, HIGH); // Keep it on steady
+    Serial.print(" | [ON] LIGHTS");
+  } else {
+    digitalWrite(roomLight, LOW);  // Keep it off steady
+  }
+
+  // TEMPERATURE ALERT: BLINKING
+  if (tempC > tempThreshold) {
+    Serial.print(" | [!] OVERHEAT");
+    digitalWrite(alertLED, HIGH);   // Alert ON
+    delay(200);                     // Wait while ON
+    digitalWrite(alertLED, LOW);    // Alert OFF
+    delay(200);                     // Wait while OFF (creates the blink)
+  } else {
+    digitalWrite(alertLED, LOW);    // Ensure it's off if temp is fine
+    delay(400);                     // Keeps the serial monitor speed consistent
+  }
+
+  Serial.println(); 
+}
